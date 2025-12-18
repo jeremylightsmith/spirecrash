@@ -24,6 +24,10 @@ func physics_update(delta: float) -> void:
 	if not player:
 		return
 
+	# Check for shoot input
+	if InputManager.is_shoot_pressed(player.player_id):
+		player.shoot_arrow()
+
 	# Check for wall jump (highest priority)
 	if InputManager.is_jump_pressed(player.player_id) and player.can_wall_jump():
 		player.perform_wall_jump()
@@ -47,6 +51,9 @@ func physics_update(delta: float) -> void:
 	# Air control
 	var input_dir: Vector2 = InputManager.get_move_input(player.player_id)
 	if abs(input_dir.x) > 0.1:
+		# Update facing direction based on movement
+		player.update_facing_direction(input_dir)
+
 		var air_speed: float = player.get("move_speed") * 0.8  # Reduced air control
 		var air_acceleration: float = player.get("acceleration") * 0.5
 		player.velocity.x = move_toward(player.velocity.x, input_dir.x * air_speed, air_acceleration * delta)

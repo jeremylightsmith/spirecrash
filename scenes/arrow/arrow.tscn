@@ -1,0 +1,31 @@
+[gd_scene load_steps=3 format=3 uid="uid://arrow_scene_001"]
+
+[ext_resource type="Script" path="res://scripts/arrow/arrow.gd" id="1_arrow"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_arrow"]
+radius = 3.0
+height = 20.0
+
+[node name="Arrow" type="RigidBody2D"]
+collision_layer = 8
+collision_mask = 7
+gravity_scale = 0.0
+script = ExtResource("1_arrow")
+
+[node name="Sprite" type="ColorRect" parent="."]
+offset_left = -10.0
+offset_top = -2.0
+offset_right = 10.0
+offset_bottom = 2.0
+color = Color(0.8, 0.8, 0.2, 1)
+
+[node name="ArrowHead" type="ColorRect" parent="."]
+offset_left = 8.0
+offset_top = -3.0
+offset_right = 12.0
+offset_bottom = 3.0
+color = Color(0.6, 0.6, 0.6, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+rotation = 1.5708
+shape = SubResource("CapsuleShape2D_arrow")

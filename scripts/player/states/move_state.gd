@@ -12,6 +12,10 @@ func physics_update(delta: float) -> void:
 	if not player:
 		return
 
+	# Check for shoot input
+	if InputManager.is_shoot_pressed(player.player_id):
+		player.shoot_arrow()
+
 	# Apply gravity
 	if not player.is_on_floor():
 		state_machine.transition_to("Jump")
@@ -29,6 +33,9 @@ func physics_update(delta: float) -> void:
 	if abs(input_dir.x) < 0.1:
 		state_machine.transition_to("Idle")
 		return
+
+	# Update facing direction based on movement
+	player.update_facing_direction(input_dir)
 
 	# Apply movement
 	var speed: float = player.get("move_speed")

@@ -12,6 +12,10 @@ func physics_update(delta: float) -> void:
 	if not player:
 		return
 
+	# Check for shoot input
+	if InputManager.is_shoot_pressed(player.player_id):
+		player.shoot_arrow()
+
 	# Apply gravity
 	if not player.is_on_floor():
 		player.velocity.y += player.get("gravity") * delta

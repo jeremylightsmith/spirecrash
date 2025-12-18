@@ -23,8 +23,24 @@ extends CharacterBody2D
 @export var wall_jump_horizontal_boost: float = 250.0
 @export var wall_jump_vertical_boost: float = 400.0
 
+# Combat parameters
+@export var max_arrows: int = 3
+@export var arrow_speed: float = 600.0
+
 # Jump state tracking
 var jumps_remaining: int = 0
+
+# Combat state tracking
+var arrows_remaining: int = 0
+var facing_direction: Vector2 = Vector2.RIGHT
+var can_shoot: bool = true
+var shoot_cooldown: float = 0.3
+
+# Arrow scene
+var arrow_scene: PackedScene = preload("res://scenes/arrow/arrow.tscn")
+
+# Shooting cooldown timer
+var shoot_timer: float = 0.0
 
 # State machine reference
 @onready var state_machine: PlayerStateMachine = get_node_or_null("StateMachine")
@@ -41,6 +57,9 @@ func _ready() -> void:
 
 		sprite.modulate = GameManager.get_player_color(player_id)
 
+	# Initialize arrows
+	arrows_remaining = max_arrows
+
 	# Emit spawn signal
 	EventBus.player_spawned.emit(self, player_id)
 
@@ -52,6 +71,13 @@ func _create_placeholder_texture() -> ImageTexture:
 
 
 func _physics_process(delta: float) -> void:
+	# Update shoot cooldown
+	if shoot_timer > 0.0:
+		shoot_timer -= delta
+		can_shoot = false
+	else:
+		can_shoot = true
+
 	# Let state machine update velocity first
 	pass
 
@@ -98,3 +124,42 @@ func perform_wall_jump() -> void:
 
 	# Wall jump counts as using one jump, leaving one more available
 	jumps_remaining = max_jumps - 1
+
+
+func can_shoot_arrow() -> bool:
+	return arrows_remaining > 0 and can_shoot
+
+
+func shoot_arrow() -> void:
+	if not can_shoot_arrow():
+		return
+
+	# Consume arrow
+	arrows_remaining -= 1
+
+	# Start cooldown
+	shoot_timer = shoot_cooldown
+	can_shoot = false
+
+	# Determine shoot direction (based on facing direction)
+	var shoot_direction: Vector2 = facing_direction
+
+	# Spawn arrow
+	var arrow: Arrow = arrow_scene.instantiate()
+	arrow.position = global_position + shoot_direction * 20.0  # Offset from player center
+
+	# Add to arena (parent's parent is usually the arena)
+	get_parent().add_child(arrow)
+
+	# Launch the arrow
+	arrow.launch(shoot_direction, player_id)
+
+
+func update_facing_direction(direction: Vector2) -> void:
+	if direction.length() > 0.1:
+		facing_direction = direction.normalized()
+
+
+func add_arrow() -> void:
+	if arrows_remaining < max_arrows:
+		arrows_remaining += 1
