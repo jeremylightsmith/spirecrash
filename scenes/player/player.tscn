@@ -1,0 +1,30 @@
+[gd_scene load_steps=5 format=3 uid="uid://b6kkqc3rmwxo0"]
+
+[ext_resource type="Script" path="res://scripts/player/player_controller.gd" id="1_1a1a1"]
+[ext_resource type="Script" path="res://scripts/player/player_state_machine.gd" id="2_2a2a2"]
+[ext_resource type="Script" path="res://scripts/player/states/idle_state.gd" id="3_3a3a3"]
+[ext_resource type="Script" path="res://scripts/player/states/move_state.gd" id="4_4a4a4"]
+[ext_resource type="Script" path="res://scripts/player/states/jump_state.gd" id="5_5a5a5"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_1"]
+size = Vector2(32, 48)
+
+[node name="Player" type="CharacterBody2D"]
+script = ExtResource("1_1a1a1")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_1")
+
+[node name="StateMachine" type="Node" parent="."]
+script = ExtResource("2_2a2a2")
+
+[node name="Idle" type="Node" parent="StateMachine"]
+script = ExtResource("3_3a3a3")
+
+[node name="Move" type="Node" parent="StateMachine"]
+script = ExtResource("4_4a4a4")
+
+[node name="Jump" type="Node" parent="StateMachine"]
+script = ExtResource("5_5a5a5")

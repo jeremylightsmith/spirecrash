@@ -1,0 +1,44 @@
+extends State
+
+## Player move state - walking/running on the ground
+
+
+func enter() -> void:
+	pass
+
+
+func physics_update(delta: float) -> void:
+	if not player:
+		return
+
+	# Apply gravity
+	if not player.is_on_floor():
+		state_machine.transition_to("Jump")
+		return
+
+	# Check for jump input
+	if InputManager.is_jump_pressed(player.player_id):
+		state_machine.transition_to("Jump")
+		return
+
+	# Get movement input
+	var input_dir: Vector2 = InputManager.get_move_input(player.player_id)
+
+	# Check if stopped moving
+	if abs(input_dir.x) < 0.1:
+		state_machine.transition_to("Idle")
+		return
+
+	# Apply movement
+	var speed: float = player.get("move_speed")
+	var acceleration: float = player.get("acceleration")
+
+	player.velocity.x = move_toward(player.velocity.x, input_dir.x * speed, acceleration * delta)
+
+	# Flip sprite based on direction
+	if input_dir.x != 0 and player.has_node("Sprite2D"):
+		var sprite: Sprite2D = player.get_node("Sprite2D")
+		if sprite:
+			sprite.flip_h = input_dir.x < 0
+
+	player.move_and_slide()
