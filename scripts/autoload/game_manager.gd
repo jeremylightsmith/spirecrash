@@ -70,7 +70,13 @@ func get_player_data(player_id: int) -> PlayerData:
 
 func get_player_color(player_id: int) -> Color:
 	var data: PlayerData = get_player_data(player_id)
-	return data.color if data else Color.WHITE
+	if data:
+		return data.color
+	# Return color from array even if player not registered (for tests/preview)
+	elif player_id >= 0 and player_id < PLAYER_COLORS.size():
+		return PLAYER_COLORS[player_id]
+	else:
+		return Color.WHITE
 
 
 func add_score(player_id: int, points: int = 1) -> void:

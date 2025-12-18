@@ -14,14 +14,26 @@ func enter() -> void:
 	if not player:
 		return
 
-	# If we just pressed jump, apply jump velocity
-	if InputManager.is_jump_pressed(player.player_id):
+	# If we just pressed jump and have jumps remaining, apply jump velocity
+	if InputManager.is_jump_pressed(player.player_id) and player.can_jump():
 		player.velocity.y = -player.get("jump_velocity")
+		player.consume_jump()
 
 
 func physics_update(delta: float) -> void:
 	if not player:
 		return
+
+	# Check for wall jump (highest priority)
+	if InputManager.is_jump_pressed(player.player_id) and player.can_wall_jump():
+		player.perform_wall_jump()
+		return  # Skip rest of physics this frame for cleaner wall jump
+
+	# Check for double jump (jump pressed while already in air)
+	if InputManager.is_jump_pressed(player.player_id) and player.can_jump():
+		player.velocity.y = -player.get("jump_velocity")
+		player.consume_jump()
+		return  # Skip gravity this frame for cleaner double jump
 
 	# Apply gravity
 	var gravity: float = player.get("gravity")
@@ -46,6 +58,7 @@ func physics_update(delta: float) -> void:
 				sprite.flip_h = input_dir.x < 0
 
 	player.move_and_slide()
+	player.clamp_velocity()
 
 	# Check if landed
 	if player.is_on_floor():

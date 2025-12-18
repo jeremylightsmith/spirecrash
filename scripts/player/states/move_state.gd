@@ -4,7 +4,8 @@ extends State
 
 
 func enter() -> void:
-	pass
+	if player:
+		player.reset_jumps()
 
 
 func physics_update(delta: float) -> void:
@@ -17,7 +18,7 @@ func physics_update(delta: float) -> void:
 		return
 
 	# Check for jump input
-	if InputManager.is_jump_pressed(player.player_id):
+	if InputManager.is_jump_pressed(player.player_id) and player.can_jump():
 		state_machine.transition_to("Jump")
 		return
 
@@ -42,3 +43,4 @@ func physics_update(delta: float) -> void:
 			sprite.flip_h = input_dir.x < 0
 
 	player.move_and_slide()
+	player.clamp_velocity()

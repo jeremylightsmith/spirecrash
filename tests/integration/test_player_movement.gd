@@ -9,7 +9,7 @@ var player: Player
 func before_each() -> void:
 	# Add a static floor for the player to stand on
 	var static_body: StaticBody2D = autofree(StaticBody2D.new())
-	static_body.position = Vector2(0, 200)
+	static_body.position = Vector2(0, 100)
 	var collision: CollisionShape2D = CollisionShape2D.new()
 	var shape: RectangleShape2D = RectangleShape2D.new()
 	shape.size = Vector2(1000, 50)
@@ -17,10 +17,10 @@ func before_each() -> void:
 	static_body.add_child(collision)
 	add_child_autofree(static_body)
 
-	# Add player above the floor
+	# Add player on the floor (positioned so it's standing on it)
 	player = add_child_autofree(player_scene.instantiate())
 	player.player_id = 0
-	player.position = Vector2(0, 0)
+	player.position = Vector2(0, 76)  # Floor is at 100, player collision is 48 high, so 100-24 = 76
 	await wait_physics_frames(5)
 
 
@@ -50,14 +50,16 @@ func test_player_has_collision_shape() -> void:
 
 
 func test_player_has_correct_color() -> void:
+	assert_not_null(player.sprite, "Player should have sprite node")
+	assert_not_null(player.sprite.texture, "Player sprite should have texture")
 	var expected_color: Color = GameManager.PLAYER_COLORS[0]
 	assert_eq(player.sprite.modulate, expected_color, "Player 0 should have red color")
 
 
 func test_player_gravity_applies() -> void:
-	# Start with zero velocity
+	# Move player into the air
 	player.velocity = Vector2.ZERO
-	player.position = Vector2(100, 100)
+	player.position = Vector2(100, -100)
 
 	# Run physics for a few frames
 	await wait_physics_frames(10)
