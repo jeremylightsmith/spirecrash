@@ -24,6 +24,10 @@ func physics_update(delta: float) -> void:
 	if not player:
 		return
 
+	# Don't process input if dead
+	if player.is_dead:
+		return
+
 	# Check for shoot input
 	if InputManager.is_shoot_pressed(player.player_id):
 		player.shoot_arrow()

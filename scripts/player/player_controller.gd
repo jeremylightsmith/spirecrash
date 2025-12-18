@@ -36,6 +36,11 @@ var facing_direction: Vector2 = Vector2.RIGHT
 var can_shoot: bool = true
 var shoot_cooldown: float = 0.3
 
+# Death state tracking
+var is_dead: bool = false
+var respawn_timer: float = 0.0
+var respawn_delay: float = 2.0
+
 # Arrow scene
 var arrow_scene: PackedScene = preload("res://scenes/arrow/arrow.tscn")
 
@@ -60,6 +65,9 @@ func _ready() -> void:
 	# Initialize arrows
 	arrows_remaining = max_arrows
 
+	# Connect to death event
+	EventBus.player_died.connect(_on_player_died)
+
 	# Emit spawn signal
 	EventBus.player_spawned.emit(self, player_id)
 
@@ -71,6 +79,13 @@ func _create_placeholder_texture() -> ImageTexture:
 
 
 func _physics_process(delta: float) -> void:
+	# Handle respawn timer
+	if is_dead:
+		respawn_timer -= delta
+		if respawn_timer <= 0.0:
+			respawn()
+		return
+
 	# Update shoot cooldown
 	if shoot_timer > 0.0:
 		shoot_timer -= delta
@@ -163,3 +178,51 @@ func update_facing_direction(direction: Vector2) -> void:
 func add_arrow() -> void:
 	if arrows_remaining < max_arrows:
 		arrows_remaining += 1
+
+
+func _on_player_died(player: CharacterBody2D, dead_player_id: int, killer_id: int) -> void:
+	# Check if this player died
+	if player == self or dead_player_id == player_id:
+		die()
+
+
+func die() -> void:
+	if is_dead:
+		return
+
+	is_dead = true
+	respawn_timer = respawn_delay
+
+	# Hide player
+	visible = false
+
+	# Disable collision
+	set_collision_layer_value(1, false)
+	set_collision_mask_value(1, false)
+
+	# Stop all movement
+	velocity = Vector2.ZERO
+
+
+func respawn() -> void:
+	is_dead = false
+
+	# Show player
+	visible = true
+
+	# Re-enable collision
+	set_collision_layer_value(1, true)
+	set_collision_mask_value(1, true)
+
+	# Reset state
+	velocity = Vector2.ZERO
+	reset_jumps()
+	arrows_remaining = max_arrows
+
+	# Find a spawn point and teleport there
+	var arena: Node = get_parent()
+	if arena and arena.has_method("get_spawn_point"):
+		global_position = arena.get_spawn_point(player_id)
+
+	# Emit respawn signal
+	EventBus.player_spawned.emit(self, player_id)
